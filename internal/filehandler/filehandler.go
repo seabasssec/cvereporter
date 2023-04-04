@@ -133,7 +133,6 @@ func GetAndExtractGz(year string) error {
 
 func CreateReport(years []string, part string, vendor string, component string, version string, arch string) error {
 	f := excelize.NewFile()
-	fmt.Printf("part is %s, vendor is %s, component is %s, version is %s, arch is %s \n", part, vendor, component, version, arch)
 	defer f.Close()
 	for _, year := range years {
 		var rows []structures.ReportRow
