@@ -1,4 +1,4 @@
-package main
+package structures
 
 //5 Level-----------------------------------------------------------------------------------
 
@@ -118,7 +118,7 @@ type CVE struct {
 	DataType        string          `json:"data_type"`
 	DataFormat      string          `json:"data_format"`
 	DataVersion     string          `json:"data_version"`
-	DataMeta        DataMeta        `json:"data_meta"`
+	DataMeta        DataMeta        `json:"CVE_data_meta"`
 	Problemtype     Problemtype     `json:"problemtype"`
 	References      References      `json:"references"`
 	DataDescription DataDescription `json:"description"`
@@ -153,4 +153,15 @@ type JSONcommonDataStructure struct {
 	CVEDataNumberOfCVEs string     `json:"CVE_data_numberOfCVEs"`
 	CVEDataTimestamp    string     `json:"CVE_data_timestamp"`
 	CVEItems            []CVEItems `json:"CVE_Items"`
+}
+
+type ReportRow struct {
+	CVEID           string
+	CPE23           string
+	DatePublication string
+	BaseScore       float64
+	Severity        string
+	CVSSVector      string
+	Impact          string
+	Description     string
 }
