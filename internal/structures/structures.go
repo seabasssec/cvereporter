@@ -155,6 +155,8 @@ type JSONcommonDataStructure struct {
 	CVEItems            []CVEItems `json:"CVE_Items"`
 }
 
+// Structure for report row
+
 type ReportRow struct {
 	CVEID           string
 	CPE23           string
