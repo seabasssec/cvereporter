@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/go-chi/chi"
 	"github.com/seabasssec/cvereporter/internal/filehandler"
@@ -99,19 +98,19 @@ func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		for i := first; i <= last; i++ {
-			err := filehandler.CheckActualy(strconv.Itoa(i))
-			if err != nil {
-				fmt.Println("Error with CheckActualy in UpdateBase:", err)
-				w.WriteHeader(http.StatusInternalServerError)
-			}
+	// wg := &sync.WaitGroup{}
+	// wg.Add(1)
+	// go func() {
+	for i := first; i <= last; i++ {
+		err := filehandler.CheckActualy(strconv.Itoa(i))
+		if err != nil {
+			fmt.Println("Error with CheckActualy in UpdateBase:", err)
+			w.WriteHeader(http.StatusInternalServerError)
 		}
-		wg.Done()
-	}()
-	wg.Wait()
+	}
+	// 	wg.Done()
+	// }()
+	// wg.Wait()
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("DONE! All files are loaded or checked."))

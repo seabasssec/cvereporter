@@ -165,5 +165,6 @@ type ReportRow struct {
 	Severity        string
 	CVSSVector      string
 	Impact          string
+	Exploit         string
 	Description     string
 }

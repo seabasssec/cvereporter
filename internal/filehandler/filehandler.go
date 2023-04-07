@@ -142,14 +142,25 @@ func CreateReport(years []string, part string, vendor string, component string, 
 			return err
 		}
 
-		f.SetCellValue(sheet, "A1", "CVE ID")
-		f.SetCellValue(sheet, "B1", "CPE 2.3 version")
-		f.SetCellValue(sheet, "C1", "Date of publication")
-		f.SetCellValue(sheet, "D1", "Base score")
-		f.SetCellValue(sheet, "E1", "Severity")
-		f.SetCellValue(sheet, "F1", "Attack vector")
-		f.SetCellValue(sheet, "G1", "Impact")
-		f.SetCellValue(sheet, "H1", "Description")
+		f.SetCellValue(sheet, "A1", "Идентификатор CVE")
+		f.SetCellValue(sheet, "B1", "CPE 2.3")
+		f.SetCellValue(sheet, "C1", "Дата публикации")
+		f.SetCellValue(sheet, "D1", "Базовый индекс")
+		f.SetCellValue(sheet, "E1", "Важность")
+		f.SetCellValue(sheet, "F1", "CVSS3 Вектор атаки")
+		f.SetCellValue(sheet, "G1", "Влияние")
+		f.SetCellValue(sheet, "H1", "Общедоступный эксплоит")
+		f.SetCellValue(sheet, "I1", "Описание")
+
+		// f.SetCellValue(sheet, "A1", "CVE ID")
+		// f.SetCellValue(sheet, "B1", "CPE 2.3 version")
+		// f.SetCellValue(sheet, "C1", "Date of publication")
+		// f.SetCellValue(sheet, "D1", "Base score")
+		// f.SetCellValue(sheet, "E1", "Severity")
+		// f.SetCellValue(sheet, "F1", "CVSS3 Attack vector")
+		// f.SetCellValue(sheet, "G1", "Impact")
+		// f.SetCellValue(sheet, "H1", "Available exploit")
+		// f.SetCellValue(sheet, "I1", "Description")
 		f.SetActiveSheet(index)
 
 		filename := fmt.Sprintf("./nvdcve-1.1-%s.json", year)
@@ -181,7 +192,7 @@ func CreateReport(years []string, part string, vendor string, component string, 
 							strings.Split(x.CPE23Uri, ":")[2] == part &&
 							strings.Split(x.CPE23Uri, ":")[3] == vendor &&
 							strings.Split(x.CPE23Uri, ":")[4] == component &&
-							((strings.Split(x.CPE23Uri, ":")[5] == version || // If version is determined or all version or version is not used
+							((strings.HasPrefix(strings.Split(x.CPE23Uri, ":")[5], version) || // If version is determined or all version or version is not used
 								strings.Split(x.CPE23Uri, ":")[5] == "-" ||
 								strings.Split(x.CPE23Uri, ":")[5] == "*") ||
 								strings.Split(x.CPE23Uri, ":")[5] != "" && version == "") && // If field version is empty
@@ -191,12 +202,40 @@ func CreateReport(years []string, part string, vendor string, component string, 
 								strings.Split(x.CPE23Uri, ":")[11] != "" && arch == "") { // If field arch is empty
 
 							impactString := ""
-							if strings.Split(x.CPE23Uri, ":")[6] == "*" || // To fill in the "Impact" field
-								(strings.Split(x.CPE23Uri, ":")[6] != "" &&
-									strings.Split(x.CPE23Uri, ":")[6] != "-" &&
-									strings.Split(x.CPE23Uri, ":")[6] != "*") {
-								impactString = fmt.Sprintf("Not vulnerable. There is an update %s", strings.Split(x.CPE23Uri, ":")[6])
+							exploitIs := ""
+							for _, ref := range data.CVE.References.ReferencesData {
+								if ref.Refsource != "" {
+									count := 0
+									// Check our refs if contain info about exploit
+									// This info should't include to resf category
+									for _, v := range ref.Tags {
+										if v == "Exploit" {
+											count++
+										}
+										if v == "Patch" {
+											count--
+										}
+									}
+									if count <= 0 {
+										impactString += fmt.Sprintf("\n%s", ref.Url)
+									}
+								}
+								for _, tag := range ref.Tags {
+									if tag == "Exploit" {
+										exploitIs += fmt.Sprintf("%s\n", ref.Url)
+									}
+								}
 							}
+							if impactString != "" {
+								impactString = "Есть патч или рекомендации по устранению для данной уязвимости." + impactString
+							}
+							if exploitIs == "" {
+								exploitIs = "Нет данных"
+							}
+							if impactString == "" {
+								impactString = "Нет данных"
+							}
+
 							row := structures.ReportRow{
 								CVEID:           data.CVE.DataMeta.ID,
 								CPE23:           x.CPE23Uri,
@@ -205,6 +244,7 @@ func CreateReport(years []string, part string, vendor string, component string, 
 								Severity:        data.Impact.BaseMetricV3.CVSSV3.BaseSeverity,
 								CVSSVector:      data.Impact.BaseMetricV3.CVSSV3.VectorString,
 								Impact:          impactString,
+								Exploit:         exploitIs,
 								Description:     data.CVE.DataDescription.DescriptionData[0].Value,
 							}
 							rows = append(rows, row)
@@ -217,7 +257,7 @@ func CreateReport(years []string, part string, vendor string, component string, 
 						strings.Split(r.CPE23Uri, ":")[2] == part &&
 						strings.Split(r.CPE23Uri, ":")[3] == vendor &&
 						strings.Split(r.CPE23Uri, ":")[4] == component &&
-						((strings.Split(r.CPE23Uri, ":")[5] == version || // If version is determined or all version or version is not used
+						((strings.HasPrefix(strings.Split(r.CPE23Uri, ":")[5], version) || // If version is determined or all version or version is not used
 							strings.Split(r.CPE23Uri, ":")[5] == "-" ||
 							strings.Split(r.CPE23Uri, ":")[5] == "*") ||
 							strings.Split(r.CPE23Uri, ":")[5] != "" && version == "") && // If field version is empty
@@ -226,11 +266,38 @@ func CreateReport(years []string, part string, vendor string, component string, 
 							strings.Split(r.CPE23Uri, ":")[11] == "-") ||
 							strings.Split(r.CPE23Uri, ":")[11] != "" && arch == "") { // If field arch is empty
 						impactString := ""
-						if strings.Split(r.CPE23Uri, ":")[6] == "*" || // To fill in the "Impact" field
-							(strings.Split(r.CPE23Uri, ":")[6] != "" &&
-								strings.Split(r.CPE23Uri, ":")[6] != "-" &&
-								strings.Split(r.CPE23Uri, ":")[6] != "*") {
-							impactString = fmt.Sprintf("Not vulnerable. There is an update %s", strings.Split(r.CPE23Uri, ":")[6])
+						exploitIs := ""
+						for _, ref := range data.CVE.References.ReferencesData {
+							if ref.Refsource != "" {
+								count := 0
+								// Check our refs if contain info about exploit
+								// This info should't include to resf category
+								for _, v := range ref.Tags {
+									if v == "Exploit" {
+										count++
+									}
+									if v == "Patch" {
+										count--
+									}
+								}
+								if count <= 0 {
+									impactString += fmt.Sprintf("\n%s", ref.Url)
+								}
+							}
+							for _, tag := range ref.Tags {
+								if tag == "Exploit" {
+									exploitIs += fmt.Sprintf("%s\n", ref.Url)
+								}
+							}
+						}
+						if impactString != "" {
+							impactString = "Есть патч или рекомендации по устранению для данной уязвимости." + impactString
+						}
+						if exploitIs == "" {
+							exploitIs = "Нет данных"
+						}
+						if impactString == "" {
+							impactString = "Нет данных"
 						}
 
 						row := structures.ReportRow{
@@ -241,6 +308,7 @@ func CreateReport(years []string, part string, vendor string, component string, 
 							Severity:        data.Impact.BaseMetricV3.CVSSV3.BaseSeverity,
 							CVSSVector:      data.Impact.BaseMetricV3.CVSSV3.VectorString,
 							Impact:          impactString,
+							Exploit:         exploitIs,
 							Description:     data.CVE.DataDescription.DescriptionData[0].Value,
 						}
 						rows = append(rows, row)
@@ -256,7 +324,8 @@ func CreateReport(years []string, part string, vendor string, component string, 
 			f.SetCellValue(sheet, "E"+strconv.Itoa(k+2), v.Severity)
 			f.SetCellValue(sheet, "F"+strconv.Itoa(k+2), v.CVSSVector)
 			f.SetCellValue(sheet, "G"+strconv.Itoa(k+2), v.Impact)
-			f.SetCellValue(sheet, "H"+strconv.Itoa(k+2), v.Description)
+			f.SetCellValue(sheet, "H"+strconv.Itoa(k+2), v.Exploit)
+			f.SetCellValue(sheet, "I"+strconv.Itoa(k+2), v.Description)
 		}
 	}
 

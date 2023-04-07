@@ -22,3 +22,12 @@ vendor/
 # IDEs directories
 .idea
 .vscode
+
+# Archives with DB
+*.gz
+
+# xlsx reports
+*.xlsx
+
+#Extracted json's
+*.json
