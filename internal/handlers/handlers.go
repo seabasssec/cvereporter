@@ -56,6 +56,7 @@ func (s *Server) CreateReport(w http.ResponseWriter, r *http.Request) {
 	component := r.FormValue("component")
 	version := r.FormValue("version")
 	vendor := r.FormValue("vendor")
+	edition := r.FormValue("edition")
 	first, err := strconv.Atoi(r.FormValue("first"))
 	if err != nil {
 		fmt.Println("Error in first parameter:", err)
@@ -73,7 +74,7 @@ func (s *Server) CreateReport(w http.ResponseWriter, r *http.Request) {
 		years = append(years, strconv.Itoa(i))
 	}
 
-	err = filehandler.CreateReport(years, part, vendor, component, version, arch)
+	err = filehandler.CreateReport(years, part, vendor, component, version, edition, arch)
 	if err != nil {
 		fmt.Println("Error with CheckActualy in UpdateBase:", err)
 		w.WriteHeader(http.StatusInternalServerError)
