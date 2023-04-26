@@ -184,3 +184,8 @@ type JSONReportRequest struct {
 	TargetHW  string `json:"target_hw"`
 	Other     string `json:"other"`
 }
+
+type JSONUpdateDB struct {
+	FromYear string `json:"first"`
+	ToYear   string `json:"last"`
+}

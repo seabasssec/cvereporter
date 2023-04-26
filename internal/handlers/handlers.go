@@ -86,15 +86,21 @@ func (s *Server) CreateReport(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	//w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
+	var JSONUpdate structures.JSONUpdateDB
+	if err := json.NewDecoder(r.Body).Decode(&JSONUpdate); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	first, err := strconv.Atoi(r.FormValue("first"))
+	first, err := strconv.Atoi(r.FormValue(JSONUpdate.FromYear))
 	if err != nil {
 		fmt.Println("Error in first parameter:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	last, err := strconv.Atoi(r.FormValue("last"))
+	last, err := strconv.Atoi(r.FormValue(JSONUpdate.ToYear))
 	if err != nil {
 		fmt.Println("Error in last parameter:", err)
 		w.WriteHeader(http.StatusBadRequest)
