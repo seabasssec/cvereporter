@@ -168,3 +168,19 @@ type ReportRow struct {
 	Exploit         string
 	Description     string
 }
+
+type JSONReportRequest struct {
+	FromYear  string `json:"first"`
+	ToYear    string `json:"last"`
+	Part      string `json:"part"`
+	Vendor    string `json:"vendor"`
+	Product   string `json:"product"`
+	Version   string `json:"version"`
+	Update    string `json:"update"`
+	Edition   string `json:"edition"`
+	Language  string `json:"language"`
+	SWEdition string `json:"sw_edition"`
+	TargetSW  string `json:"target_sw"`
+	TargetHW  string `json:"target_hw"`
+	Other     string `json:"other"`
+}

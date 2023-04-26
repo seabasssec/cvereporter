@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/seabasssec/cvereporter/internal/filehandler"
+	"github.com/seabasssec/cvereporter/internal/structures"
 )
 
 // Custom writer for gzip middleware
@@ -33,15 +35,9 @@ func NewServer() *Server {
 
 	server.Router.Route("/", func(r chi.Router) {
 		r.Use(GzipHandle)
-		// r.Use(AuthHandler)
-		// r.Post("/", GeneratorHandler)
-		// r.Post("/api/shorten", JSONGeneratorHandler)
-		// r.Get("/{shortLink}", RedirectionHandler)
-		// r.Get("/api/user/urls", LinkListHandler)
-		// r.Get("/ping", DBisAliveHandler)
-		// r.Post("/api/shorten/batch", JSONbatchGeneratorHandler)
 		r.Post("/updatedb", server.UpdateBase)
 		r.Post("/report", server.CreateReport)
+		r.Handle("/web/*", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 
 	})
 	return &server
@@ -49,23 +45,24 @@ func NewServer() *Server {
 
 func (s *Server) CreateReport(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	part := r.FormValue("part")
-	arch := r.FormValue("arch")
+	w.Header().Set("Content-Type", "application/json")
+	var JSONRequest structures.JSONReportRequest
+	if err := json.NewDecoder(r.Body).Decode(&JSONRequest); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	component := r.FormValue("component")
-	version := r.FormValue("version")
-	vendor := r.FormValue("vendor")
-	edition := r.FormValue("edition")
-	first, err := strconv.Atoi(r.FormValue("first"))
+	first, err := strconv.Atoi(JSONRequest.FromYear)
 	if err != nil {
 		fmt.Println("Error in first parameter:", err)
+		w.Write([]byte("Something went wrong."))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	last, err := strconv.Atoi(r.FormValue("last"))
+	last, err := strconv.Atoi(JSONRequest.ToYear)
 	if err != nil {
 		fmt.Println("Error in last parameter:", err)
+		w.Write([]byte("Something went wrong."))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -74,13 +71,17 @@ func (s *Server) CreateReport(w http.ResponseWriter, r *http.Request) {
 		years = append(years, strconv.Itoa(i))
 	}
 
-	err = filehandler.CreateReport(years, part, vendor, component, version, edition, arch)
+	err = filehandler.CreateReport(years, JSONRequest.Part, JSONRequest.Vendor, JSONRequest.Product, JSONRequest.Version, JSONRequest.Update, JSONRequest.Edition, JSONRequest.Language, JSONRequest.SWEdition, JSONRequest.TargetSW, JSONRequest.TargetHW, JSONRequest.Other)
 	if err != nil {
 		fmt.Println("Error with CheckActualy in UpdateBase:", err)
+		w.Write([]byte("Something went wrong."))
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
 	w.WriteHeader(http.StatusOK)
+	fmt.Println("DONE! Report is created!.")
+	w.Write([]byte("DONE! Report is created!."))
+
 }
 
 func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
@@ -112,10 +113,11 @@ func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 	// 	wg.Done()
 	// }()
 	// wg.Wait()
-
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("DONE! All files are loaded or checked."))
+
 	fmt.Println("DONE! All files are loaded or checked.")
+
+	http.Redirect(w, r, "/", http.StatusFound)
 
 }
 

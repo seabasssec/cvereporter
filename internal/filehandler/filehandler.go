@@ -131,7 +131,7 @@ func GetAndExtractGz(year string) error {
 	return nil
 }
 
-func CreateReport(years []string, part string, vendor string, component string, version string, edition string, arch string) error {
+func CreateReport(years []string, part string, vendor string, product string, version string, update string, edition string, language string, sw_edition string, target_sw string, target_hw string, other string) error {
 	f := excelize.NewFile()
 	defer f.Close()
 	for _, year := range years {
@@ -191,7 +191,7 @@ func CreateReport(years []string, part string, vendor string, component string, 
 						if x.Vulnerable &&
 							strings.Split(x.CPE23Uri, ":")[2] == part &&
 							strings.Split(x.CPE23Uri, ":")[3] == vendor &&
-							strings.Split(x.CPE23Uri, ":")[4] == component &&
+							strings.Split(x.CPE23Uri, ":")[4] == product &&
 							((strings.HasPrefix(strings.Split(x.CPE23Uri, ":")[5], version) || // If version is determined or all version or version is not used
 								strings.Split(x.CPE23Uri, ":")[5] == "-" ||
 								strings.Split(x.CPE23Uri, ":")[5] == "*") ||
@@ -200,10 +200,10 @@ func CreateReport(years []string, part string, vendor string, component string, 
 								strings.Split(x.CPE23Uri, ":")[6] == "-" ||
 								strings.Split(x.CPE23Uri, ":")[6] == "*") ||
 								strings.Split(x.CPE23Uri, ":")[6] != "" && edition == "") && // If edition version is empty
-							((strings.Split(x.CPE23Uri, ":")[11] == arch || // If arch is determined or all arch or arch is not used
+							((strings.Split(x.CPE23Uri, ":")[11] == target_hw || // If arch is determined or all arch or arch is not used
 								strings.Split(x.CPE23Uri, ":")[11] == "*" ||
 								strings.Split(x.CPE23Uri, ":")[11] == "-") ||
-								strings.Split(x.CPE23Uri, ":")[11] != "" && arch == "") { // If field arch is empty
+								strings.Split(x.CPE23Uri, ":")[11] != "" && target_hw == "") { // If field arch is empty
 
 							impactString := ""
 							exploitIs := ""
@@ -260,7 +260,7 @@ func CreateReport(years []string, part string, vendor string, component string, 
 					if r.Vulnerable &&
 						strings.Split(r.CPE23Uri, ":")[2] == part &&
 						strings.Split(r.CPE23Uri, ":")[3] == vendor &&
-						strings.Split(r.CPE23Uri, ":")[4] == component &&
+						strings.Split(r.CPE23Uri, ":")[4] == product &&
 						((strings.HasPrefix(strings.Split(r.CPE23Uri, ":")[5], version) || // If version is determined or all version or version is not used
 							strings.Split(r.CPE23Uri, ":")[5] == "-" ||
 							strings.Split(r.CPE23Uri, ":")[5] == "*") ||
@@ -269,10 +269,10 @@ func CreateReport(years []string, part string, vendor string, component string, 
 							strings.Split(r.CPE23Uri, ":")[6] == "-" ||
 							strings.Split(r.CPE23Uri, ":")[6] == "*") ||
 							strings.Split(r.CPE23Uri, ":")[6] != "" && edition == "") && // If edition version is empty
-						((strings.Split(r.CPE23Uri, ":")[11] == arch || // If arch is determined or all arch or arch is not used
+						((strings.Split(r.CPE23Uri, ":")[11] == target_hw || // If arch is determined or all arch or arch is not used
 							strings.Split(r.CPE23Uri, ":")[11] == "*" ||
 							strings.Split(r.CPE23Uri, ":")[11] == "-") ||
-							strings.Split(r.CPE23Uri, ":")[11] != "" && arch == "") { // If field arch is empty
+							strings.Split(r.CPE23Uri, ":")[11] != "" && target_hw == "") { // If field arch is empty
 						impactString := ""
 						exploitIs := ""
 						for _, ref := range data.CVE.References.ReferencesData {
@@ -338,7 +338,7 @@ func CreateReport(years []string, part string, vendor string, component string, 
 	}
 
 	// Save spreadsheet by the given path.
-	xlsxFileName := fmt.Sprintf("%s_%s_%s_%s_%s.xlsx", vendor, component, version, edition, arch)
+	xlsxFileName := fmt.Sprintf("%s_%s_%s_%s_%s.xlsx", vendor, product, version, edition, target_hw)
 	if err := f.SaveAs(xlsxFileName); err != nil {
 		fmt.Println(err)
 	}
