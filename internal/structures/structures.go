@@ -161,9 +161,12 @@ type ReportRow struct {
 	CVEID           string
 	CPE23           string
 	DatePublication string
-	BaseScore       float64
-	Severity        string
-	CVSSVector      string
+	BaseScoreCVSS3  float64
+	SeverityCVSS3   string
+	CVSS3Vector     string
+	BaseScoreCVSS2  float64
+	SeverityCVSS2   string
+	CVSS2Vector     string
 	Impact          string
 	Exploit         string
 	Description     string

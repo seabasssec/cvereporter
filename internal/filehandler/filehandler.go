@@ -145,12 +145,15 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 		f.SetCellValue(sheet, "A1", "Идентификатор CVE")
 		f.SetCellValue(sheet, "B1", "CPE 2.3")
 		f.SetCellValue(sheet, "C1", "Дата публикации")
-		f.SetCellValue(sheet, "D1", "Базовый индекс")
-		f.SetCellValue(sheet, "E1", "Важность")
+		f.SetCellValue(sheet, "D1", "Базовый индекс CVSS3")
+		f.SetCellValue(sheet, "E1", "Важность CVSS3")
 		f.SetCellValue(sheet, "F1", "CVSS3 Вектор атаки")
-		f.SetCellValue(sheet, "G1", "Влияние")
-		f.SetCellValue(sheet, "H1", "Общедоступный эксплоит")
-		f.SetCellValue(sheet, "I1", "Описание")
+		f.SetCellValue(sheet, "G1", "Базовый индекс CVSS2")
+		f.SetCellValue(sheet, "H1", "Важность CVSS2")
+		f.SetCellValue(sheet, "I1", "CVSS2 Вектор атаки")
+		f.SetCellValue(sheet, "J1", "Влияние")
+		f.SetCellValue(sheet, "K1", "Общедоступный эксплоит")
+		f.SetCellValue(sheet, "L1", "Описание")
 
 		// f.SetCellValue(sheet, "A1", "CVE ID")
 		// f.SetCellValue(sheet, "B1", "CPE 2.3 version")
@@ -158,9 +161,12 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 		// f.SetCellValue(sheet, "D1", "Base score")
 		// f.SetCellValue(sheet, "E1", "Severity")
 		// f.SetCellValue(sheet, "F1", "CVSS3 Attack vector")
-		// f.SetCellValue(sheet, "G1", "Impact")
-		// f.SetCellValue(sheet, "H1", "Available exploit")
-		// f.SetCellValue(sheet, "I1", "Description")
+		// f.SetCellValue(sheet, "G1", "Base score")
+		// f.SetCellValue(sheet, "H1", "Severity")
+		// f.SetCellValue(sheet, "I1", "CVSS3 Attack vector")
+		// f.SetCellValue(sheet, "J1", "Impact")
+		// f.SetCellValue(sheet, "K1", "Available exploit")
+		// f.SetCellValue(sheet, "L1", "Description")
 		f.SetActiveSheet(index)
 
 		filename := fmt.Sprintf("./nvdcve-1.1-%s.json", year)
@@ -231,7 +237,7 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 								}
 							}
 							if impactString != "" {
-								impactString = "Есть патч или рекомендации по устранению для данной уязвимости." + impactString
+								impactString = "Есть патч или рекомендации по устранению для данной уязвимости. " + impactString
 							}
 							if exploitIs == "" {
 								exploitIs = "Нет данных"
@@ -244,9 +250,12 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 								CVEID:           data.CVE.DataMeta.ID,
 								CPE23:           x.CPE23Uri,
 								DatePublication: data.PublishedDate,
-								BaseScore:       data.Impact.BaseMetricV3.CVSSV3.BaseScore,
-								Severity:        data.Impact.BaseMetricV3.CVSSV3.BaseSeverity,
-								CVSSVector:      data.Impact.BaseMetricV3.CVSSV3.VectorString,
+								BaseScoreCVSS3:  data.Impact.BaseMetricV3.CVSSV3.BaseScore,
+								SeverityCVSS3:   data.Impact.BaseMetricV3.CVSSV3.BaseSeverity,
+								CVSS3Vector:     data.Impact.BaseMetricV3.CVSSV3.VectorString,
+								BaseScoreCVSS2:  data.Impact.BaseMetricV2.CVSSV2.BaseScore,
+								SeverityCVSS2:   data.Impact.BaseMetricV2.Severity,
+								CVSS2Vector:     data.Impact.BaseMetricV2.CVSSV2.VectorString,
 								Impact:          impactString,
 								Exploit:         exploitIs,
 								Description:     data.CVE.DataDescription.DescriptionData[0].Value,
@@ -312,9 +321,12 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 							CVEID:           data.CVE.DataMeta.ID,
 							CPE23:           r.CPE23Uri,
 							DatePublication: data.PublishedDate,
-							BaseScore:       data.Impact.BaseMetricV3.CVSSV3.BaseScore,
-							Severity:        data.Impact.BaseMetricV3.CVSSV3.BaseSeverity,
-							CVSSVector:      data.Impact.BaseMetricV3.CVSSV3.VectorString,
+							BaseScoreCVSS3:  data.Impact.BaseMetricV3.CVSSV3.BaseScore,
+							SeverityCVSS3:   data.Impact.BaseMetricV3.CVSSV3.BaseSeverity,
+							CVSS3Vector:     data.Impact.BaseMetricV3.CVSSV3.VectorString,
+							BaseScoreCVSS2:  data.Impact.BaseMetricV2.CVSSV2.BaseScore,
+							SeverityCVSS2:   data.Impact.BaseMetricV2.Severity,
+							CVSS2Vector:     data.Impact.BaseMetricV2.CVSSV2.VectorString,
 							Impact:          impactString,
 							Exploit:         exploitIs,
 							Description:     data.CVE.DataDescription.DescriptionData[0].Value,
@@ -328,17 +340,20 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 			f.SetCellValue(sheet, "A"+strconv.Itoa(k+2), v.CVEID)
 			f.SetCellValue(sheet, "B"+strconv.Itoa(k+2), v.CPE23)
 			f.SetCellValue(sheet, "C"+strconv.Itoa(k+2), v.DatePublication)
-			f.SetCellValue(sheet, "D"+strconv.Itoa(k+2), v.BaseScore)
-			f.SetCellValue(sheet, "E"+strconv.Itoa(k+2), v.Severity)
-			f.SetCellValue(sheet, "F"+strconv.Itoa(k+2), v.CVSSVector)
-			f.SetCellValue(sheet, "G"+strconv.Itoa(k+2), v.Impact)
-			f.SetCellValue(sheet, "H"+strconv.Itoa(k+2), v.Exploit)
-			f.SetCellValue(sheet, "I"+strconv.Itoa(k+2), v.Description)
+			f.SetCellValue(sheet, "D"+strconv.Itoa(k+2), v.BaseScoreCVSS3)
+			f.SetCellValue(sheet, "E"+strconv.Itoa(k+2), v.SeverityCVSS3)
+			f.SetCellValue(sheet, "F"+strconv.Itoa(k+2), v.CVSS3Vector)
+			f.SetCellValue(sheet, "G"+strconv.Itoa(k+2), v.BaseScoreCVSS2)
+			f.SetCellValue(sheet, "H"+strconv.Itoa(k+2), v.SeverityCVSS2)
+			f.SetCellValue(sheet, "I"+strconv.Itoa(k+2), v.CVSS2Vector)
+			f.SetCellValue(sheet, "J"+strconv.Itoa(k+2), v.Impact)
+			f.SetCellValue(sheet, "K"+strconv.Itoa(k+2), v.Exploit)
+			f.SetCellValue(sheet, "L"+strconv.Itoa(k+2), v.Description)
 		}
 	}
 
 	// Save spreadsheet by the given path.
-	xlsxFileName := fmt.Sprintf("%s_%s_%s_%s_%s.xlsx", vendor, product, version, edition, target_hw)
+	xlsxFileName := fmt.Sprintf("%s_%s_%s_%s_%s_%s.xlsx", vendor, product, version, edition, target_hw, years)
 	if err := f.SaveAs(xlsxFileName); err != nil {
 		fmt.Println(err)
 	}
