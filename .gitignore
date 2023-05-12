@@ -18,6 +18,7 @@ cmd/cvereporter/cvereporter
 
 # Dependency directories (remove the comment below to include it)
 vendor/
+public/
 
 # IDEs directories
 .idea

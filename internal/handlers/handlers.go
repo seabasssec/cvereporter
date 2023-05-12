@@ -80,7 +80,7 @@ func (s *Server) CreateReport(w http.ResponseWriter, r *http.Request) {
 		years = append(years, strconv.Itoa(i))
 	}
 
-	err = filehandler.CreateReport(years, JSONRequest.Part, JSONRequest.Vendor, JSONRequest.Product, JSONRequest.Version, JSONRequest.Update, JSONRequest.Edition, JSONRequest.Language, JSONRequest.SWEdition, JSONRequest.TargetSW, JSONRequest.TargetHW, JSONRequest.Other)
+	filename, err := filehandler.CreateReport(years, JSONRequest.Part, JSONRequest.Vendor, JSONRequest.Product, JSONRequest.Version, JSONRequest.Update, JSONRequest.Edition, JSONRequest.Language, JSONRequest.SWEdition, JSONRequest.TargetSW, JSONRequest.TargetHW, JSONRequest.Other)
 	if err != nil {
 		fmt.Println("Error with CheckActualy in UpdateBase:", err)
 		w.Write([]byte("Something went wrong."))
@@ -88,8 +88,9 @@ func (s *Server) CreateReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(filename))
 	fmt.Println("DONE! Report is created!.")
-	w.Write([]byte("DONE! Report is created!."))
+	//w.Write([]byte("DONE! Report is created!."))
 
 }
 
@@ -102,14 +103,16 @@ func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	first, err := strconv.Atoi(r.FormValue(JSONUpdate.FromYear))
+	fmt.Println(r.FormValue(JSONUpdate.FromYear), r.FormValue(JSONUpdate.ToYear))
+	first, err := strconv.Atoi(JSONUpdate.FromYear)
+	//first, err := strconv.Atoi(r.FormValue(JSONUpdate.FromYear))
 	if err != nil {
 		fmt.Println("Error in first parameter:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	last, err := strconv.Atoi(r.FormValue(JSONUpdate.ToYear))
+	last, err := strconv.Atoi(JSONUpdate.ToYear)
+	//last, err := strconv.Atoi(r.FormValue(JSONUpdate.ToYear))
 	if err != nil {
 		fmt.Println("Error in last parameter:", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -129,10 +132,8 @@ func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 	// }()
 	// wg.Wait()
 	w.WriteHeader(http.StatusOK)
-
+	w.Write([]byte("DONE! All files are loaded or checked."))
 	fmt.Println("DONE! All files are loaded or checked.")
-
-	http.Redirect(w, r, "/", http.StatusFound)
 
 }
 

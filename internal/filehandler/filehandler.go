@@ -11,14 +11,27 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/seabasssec/cvereporter/internal/structures"
 	"github.com/xuri/excelize/v2"
 )
+
+// Using for generation random string
+func RandStringRunes(n int) string {
+	var letterRunes = []rune("1234567890")
+	rand.Seed(time.Now().UnixNano())
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
 
 func CheckActualy(year string) error {
 	reqCrtErr := errors.New("could not create request in CheckActualy")
@@ -59,8 +72,8 @@ func CheckActualy(year string) error {
 			if _, err := io.Copy(h, f); err != nil {
 				return err
 			}
-			fmt.Printf("sha256 for file %s from NVD-server is: %s \n", filename, string(txtline[7:]))
-			fmt.Printf("sha256 from local storage file %s is: %s \n", filename, strings.ToUpper(hex.EncodeToString(h.Sum(nil))))
+			//fmt.Printf("sha256 for file %s from NVD-server is: %s \n", filename, string(txtline[7:]))
+			//fmt.Printf("sha256 from local storage file %s is: %s \n", filename, strings.ToUpper(hex.EncodeToString(h.Sum(nil))))
 			if string(txtline[7:]) != strings.ToUpper(hex.EncodeToString(h.Sum(nil))) {
 				err := GetAndExtractGz(year)
 				if err != nil {
@@ -131,7 +144,7 @@ func GetAndExtractGz(year string) error {
 	return nil
 }
 
-func CreateReport(years []string, part string, vendor string, product string, version string, update string, edition string, language string, sw_edition string, target_sw string, target_hw string, other string) error {
+func CreateReport(years []string, part string, vendor string, product string, version string, update string, edition string, language string, sw_edition string, target_sw string, target_hw string, other string) (string, error) {
 	f := excelize.NewFile()
 	defer f.Close()
 	for _, year := range years {
@@ -139,7 +152,7 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 		sheet := year
 		index, err := f.NewSheet(sheet)
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		f.SetCellValue(sheet, "A1", "Идентификатор CVE")
@@ -173,11 +186,11 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 
 		file, err := os.Open(filename)
 		if err != nil {
-			return err
+			return "", err
 		}
 		byteValue, err := ioutil.ReadAll(file)
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		var jsonfile structures.JSONcommonDataStructure
@@ -351,11 +364,11 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 			f.SetCellValue(sheet, "L"+strconv.Itoa(k+2), v.Description)
 		}
 	}
-
+	randomseed := RandStringRunes(5)
 	// Save spreadsheet by the given path.
-	xlsxFileName := fmt.Sprintf("%s_%s_%s_%s_%s_%s.xlsx", vendor, product, version, edition, target_hw, years)
-	if err := f.SaveAs(xlsxFileName); err != nil {
+	xlsxFileName := fmt.Sprintf("/public/%s_%s_%s_%s_%s_%s_%s.xlsx", vendor, product, version, edition, target_hw, years, randomseed)
+	if err := f.SaveAs("." + xlsxFileName); err != nil {
 		fmt.Println(err)
 	}
-	return nil
+	return "http://127.0.0.1:8080" + xlsxFileName, nil
 }
