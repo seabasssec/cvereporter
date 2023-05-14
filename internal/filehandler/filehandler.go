@@ -168,6 +168,7 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 		f.SetCellValue(sheet, "K1", "Общедоступный эксплоит")
 		f.SetCellValue(sheet, "L1", "Описание")
 
+		// For reports with English column headings
 		// f.SetCellValue(sheet, "A1", "CVE ID")
 		// f.SetCellValue(sheet, "B1", "CPE 2.3 version")
 		// f.SetCellValue(sheet, "C1", "Date of publication")
