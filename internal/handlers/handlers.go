@@ -89,14 +89,12 @@ func (s *Server) CreateReport(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(filename))
-	fmt.Println("DONE! Report is created!.")
-	//w.Write([]byte("DONE! Report is created!."))
+	//fmt.Println("DONE! Report is created!.")
 
 }
 
 func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	//w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Content-Type", "application/json")
 	var JSONUpdate structures.JSONUpdateDB
 	if err := json.NewDecoder(r.Body).Decode(&JSONUpdate); err != nil {
@@ -118,9 +116,7 @@ func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// wg := &sync.WaitGroup{}
-	// wg.Add(1)
-	// go func() {
+
 	for i := first; i <= last; i++ {
 		err := filehandler.CheckActualy(strconv.Itoa(i))
 		if err != nil {
@@ -128,12 +124,9 @@ func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
-	// 	wg.Done()
-	// }()
-	// wg.Wait()
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("DONE! All files are loaded or checked."))
-	fmt.Println("DONE! All files are loaded or checked.")
+	// fmt.Println("DONE! All files are loaded or checked.")
 
 }
 
