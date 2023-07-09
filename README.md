@@ -3,8 +3,8 @@ Create a report on CVE in modules of interest to you
 
 ## REST API
 
-<pre><code>POST    /updatedb/  : Update local DB </code></pre>
-<pre><code>POST    /reports/   : Create report </code></pre>
+<pre>POST /updatedb/ : Update local DB </pre>
+<pre>POST /reports/ : Create report </pre>
 
 Next feature:
 - take a target from the list
