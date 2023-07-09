@@ -12,6 +12,8 @@ Create a report on CVE in modules of interest to you
     "last": "2016"
     }
 
+All fields are required
+
 <code>POST /reports/ : Create report</code><br>
 
 ### Example
@@ -31,6 +33,8 @@ Create a report on CVE in modules of interest to you
     "target_hw": "",
     "other": ""
     }
+
+The fields "first", "last", "part", "vendor" and "product" are required.
 
 Next feature:
 - take a target from the list
