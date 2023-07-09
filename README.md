@@ -3,7 +3,7 @@ Create a report on CVE in modules of interest to you
 
 ## REST API
 
-<code>POST /updatedb/ : Update local DB</code><br>
+<li><code>POST /updatedb/ : Update local DB</code><br></li>
 
 ### Example
 
@@ -14,7 +14,7 @@ Create a report on CVE in modules of interest to you
 
 All fields are required
 
-<code>POST /reports/ : Create report</code><br>
+<li><code>POST /reports/ : Create report</code></li><br>
 
 ### Example
 
