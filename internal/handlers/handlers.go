@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -89,7 +90,6 @@ func (s *Server) CreateReport(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(filename))
-	//fmt.Println("DONE! Report is created!.")
 
 }
 
@@ -103,30 +103,43 @@ func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(r.FormValue(JSONUpdate.FromYear), r.FormValue(JSONUpdate.ToYear))
 	first, err := strconv.Atoi(JSONUpdate.FromYear)
-	//first, err := strconv.Atoi(r.FormValue(JSONUpdate.FromYear))
 	if err != nil {
 		fmt.Println("Error in first parameter:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	last, err := strconv.Atoi(JSONUpdate.ToYear)
-	//last, err := strconv.Atoi(r.FormValue(JSONUpdate.ToYear))
 	if err != nil {
 		fmt.Println("Error in last parameter:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
+	out := make(chan int, last-first+1)
+	var wg sync.WaitGroup
+	wg.Add(last - first + 1)
 	for i := first; i <= last; i++ {
-		err := filehandler.CheckActualy(strconv.Itoa(i))
+		go func(i int) {
+			defer wg.Done()
+			fmt.Printf("Start gorutine for %s year\n", strconv.Itoa(i))
+			err = filehandler.CheckActualy(strconv.Itoa(i))
+			out <- i
+		}(i)
+	}
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
+	for v := range out {
+		fmt.Println(v)
 		if err != nil {
 			fmt.Println("Error with CheckActualy in UpdateBase:", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
+
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("DONE! All files are loaded or checked."))
-	// fmt.Println("DONE! All files are loaded or checked.")
 
 }
 
