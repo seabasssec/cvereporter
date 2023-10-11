@@ -121,7 +121,6 @@ func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 	for i := first; i <= last; i++ {
 		go func(i int) {
 			defer wg.Done()
-			fmt.Printf("Start gorutine for %s year\n", strconv.Itoa(i))
 			err = filehandler.CheckActualy(strconv.Itoa(i))
 			out <- i
 		}(i)
@@ -131,9 +130,8 @@ func (s *Server) UpdateBase(w http.ResponseWriter, r *http.Request) {
 		close(out)
 	}()
 	for v := range out {
-		fmt.Println(v)
 		if err != nil {
-			fmt.Println("Error with CheckActualy in UpdateBase:", err)
+			fmt.Printf("Error with CheckActualy in UpdateBase: %s with year %d ", err, v)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
