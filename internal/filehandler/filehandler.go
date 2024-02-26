@@ -72,11 +72,13 @@ func CheckActualy(year string) error {
 			if _, err := io.Copy(h, f); err != nil {
 				return err
 			}
-			//fmt.Printf("sha256 for file %s from NVD-server is: %s \n", filename, string(txtline[7:]))
-			//fmt.Printf("sha256 from local storage file %s is: %s \n", filename, strings.ToUpper(hex.EncodeToString(h.Sum(nil))))
 			if string(txtline[7:]) != strings.ToUpper(hex.EncodeToString(h.Sum(nil))) {
+				fmt.Printf("sha256 for file %s from NVD-server is: %s \n", filename, string(txtline[7:]))
+				fmt.Printf("sha256 from local storage file %s is: %s \n", filename, strings.ToUpper(hex.EncodeToString(h.Sum(nil))))
+				fmt.Printf("Update file %s from NVD-server\n", filename)
 				err := GetAndExtractGz(year)
 				if err != nil {
+					fmt.Printf("Error file %s upadate process\n", filename)
 					return err
 				}
 			}
@@ -228,7 +230,7 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 							impactString := ""
 							exploitIs := ""
 							for _, ref := range data.CVE.References.ReferencesData {
-								if ref.Refsource != "" {
+								if ref.Refsource != "" || ref.Url != "" {
 									count := 0
 									// Check our refs if contain info about exploit
 									// This info should't include to resf category
@@ -249,6 +251,11 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 										exploitIs += fmt.Sprintf("%s\n", ref.Url)
 									}
 								}
+								// if ref.Name != "" {
+								// 	impactString = ref.Name
+								// } else if ref.Url != "" {
+								// 	impactString = ref.Url
+								// }
 							}
 							if impactString != "" {
 								impactString = "Есть патч или рекомендации по устранению для данной уязвимости. " + impactString
@@ -299,7 +306,7 @@ func CreateReport(years []string, part string, vendor string, product string, ve
 						impactString := ""
 						exploitIs := ""
 						for _, ref := range data.CVE.References.ReferencesData {
-							if ref.Refsource != "" {
+							if ref.Refsource != "" || ref.Url != "" {
 								count := 0
 								// Check our refs if contain info about exploit
 								// This info should't include to resf category
